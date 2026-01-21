@@ -10,6 +10,8 @@ from workbench.types import (
     Webhook,
     WebhookDelivery,
     WebhookEvent,
+    WebhookSecretResponse,
+    WebhookEventTypeInfo,
     ApiResponse,
     ListResponse,
 )
@@ -77,6 +79,7 @@ class WebhooksResource:
         name: str,
         url: str,
         events: List[WebhookEvent],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> ApiResponse[Webhook]:
         """
         Create a new webhook.
@@ -88,6 +91,7 @@ class WebhooksResource:
             name: Webhook name
             url: Webhook endpoint URL
             events: List of events to subscribe to
+            metadata: Optional custom metadata to attach to the webhook
 
         Returns:
             Created webhook (includes secret)
@@ -97,6 +101,8 @@ class WebhooksResource:
             "url": url,
             "events": events,
         }
+        if metadata is not None:
+            data["metadata"] = metadata
         return self._client.post("/v1/webhooks", json=data)  # type: ignore
 
     def update(
@@ -106,6 +112,7 @@ class WebhooksResource:
         url: Optional[str] = None,
         events: Optional[List[WebhookEvent]] = None,
         is_active: Optional[bool] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> ApiResponse[Webhook]:
         """
         Update a webhook.
@@ -116,6 +123,7 @@ class WebhooksResource:
             url: New webhook URL
             events: New list of events
             is_active: Whether the webhook is active
+            metadata: Custom metadata to attach to the webhook
 
         Returns:
             Updated webhook
@@ -125,6 +133,7 @@ class WebhooksResource:
             "url": url,
             "events": events,
             "is_active": is_active,
+            "metadata": metadata,
         }
         data = {k: v for k, v in data.items() if v is not None}
         return self._client.put(f"/v1/webhooks/{id}", json=data)  # type: ignore
@@ -164,6 +173,26 @@ class WebhooksResource:
         }
         return self._client.get(f"/v1/webhooks/{webhook_id}/deliveries", params=params)  # type: ignore
 
+    def get_delivery(
+        self,
+        webhook_id: str,
+        delivery_id: str,
+    ) -> ApiResponse[WebhookDelivery]:
+        """
+        Get a single webhook delivery.
+
+        Returns details about a specific delivery attempt, including
+        request/response headers and timing information.
+
+        Args:
+            webhook_id: Webhook UUID
+            delivery_id: Delivery UUID
+
+        Returns:
+            Delivery details
+        """
+        return self._client.get(f"/v1/webhooks/{webhook_id}/deliveries/{delivery_id}")  # type: ignore
+
     def test(self, id: str) -> ApiResponse[Dict[str, str]]:
         """
         Send a test webhook.
@@ -172,6 +201,34 @@ class WebhooksResource:
             id: Webhook UUID
 
         Returns:
-            Test delivery result
+            Test delivery result with message and delivery_id
         """
         return self._client.post(f"/v1/webhooks/{id}/test")  # type: ignore
+
+    def regenerate_secret(self, id: str) -> ApiResponse[WebhookSecretResponse]:
+        """
+        Regenerate webhook secret.
+
+        Generates a new secret for the webhook. The old secret will
+        immediately stop working. Make sure to update your webhook
+        handler with the new secret.
+
+        Args:
+            id: Webhook UUID
+
+        Returns:
+            New webhook secret
+        """
+        return self._client.post(f"/v1/webhooks/{id}/secret")  # type: ignore
+
+    def list_event_types(self) -> ApiResponse[List[WebhookEventTypeInfo]]:
+        """
+        List available webhook event types.
+
+        Returns all event types that can be subscribed to, with
+        descriptions and categories.
+
+        Returns:
+            List of available event types with descriptions
+        """
+        return self._client.get("/v1/webhooks/event-types")  # type: ignore

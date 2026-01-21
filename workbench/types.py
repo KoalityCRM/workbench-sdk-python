@@ -6,7 +6,7 @@ full type safety when working with the Workbench API.
 """
 
 from datetime import datetime
-from typing import Any, Generic, List, Literal, Optional, TypedDict, TypeVar
+from typing import Any, Dict, Generic, List, Literal, Optional, TypedDict, TypeVar
 from typing_extensions import NotRequired
 
 # ===========================================
@@ -16,13 +16,21 @@ from typing_extensions import NotRequired
 T = TypeVar("T")
 
 
-class Pagination(TypedDict):
-    """Pagination information for list responses."""
+class Pagination(TypedDict, total=False):
+    """
+    Pagination information for list responses.
+    Supports both page-based and offset-based pagination.
+    """
 
+    # Page-based pagination
     page: int
     per_page: int
-    total: int
     total_pages: int
+    # Offset-based pagination
+    limit: int
+    offset: int
+    # Common fields
+    total: int
     has_more: bool
 
 
@@ -68,11 +76,12 @@ class Client(TypedDict):
     status: ClientStatus
     source: Optional[str]
     notes: Optional[str]
+    internal_notes: Optional[str]  # Internal notes visible only to business users
     tags: Optional[List[str]]
     next_contact_date: Optional[str]
     ask_for_review: Optional[bool]
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class CreateClientParams(TypedDict):
@@ -86,6 +95,7 @@ class CreateClientParams(TypedDict):
     status: NotRequired[ClientStatus]
     source: NotRequired[Optional[str]]
     notes: NotRequired[Optional[str]]
+    internal_notes: NotRequired[Optional[str]]
     tags: NotRequired[Optional[List[str]]]
 
 
@@ -100,6 +110,7 @@ class UpdateClientParams(TypedDict, total=False):
     status: ClientStatus
     source: Optional[str]
     notes: Optional[str]
+    internal_notes: Optional[str]
     tags: Optional[List[str]]
     next_contact_date: Optional[str]
     ask_for_review: Optional[bool]
@@ -110,6 +121,8 @@ class ListClientsParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     search: str
     sort: str
     order: Literal["asc", "desc"]
@@ -120,7 +133,9 @@ class ListClientsParams(TypedDict, total=False):
 # INVOICE TYPES
 # ===========================================
 
-InvoiceStatus = Literal["draft", "sent", "viewed", "partial", "paid", "overdue", "cancelled"]
+InvoiceStatus = Literal[
+    "draft", "sent", "viewed", "partial", "paid", "overdue", "cancelled", "voided"
+]
 
 
 class InvoiceItem(TypedDict):
@@ -152,10 +167,12 @@ class Invoice(TypedDict):
     amount_paid: float
     notes: Optional[str]
     terms: Optional[str]
+    sent_at: Optional[str]  # Timestamp when the invoice was sent to the client
+    paid_at: Optional[str]  # Timestamp when the invoice was fully paid
     items: List[InvoiceItem]
     client: NotRequired[Client]
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class CreateInvoiceParams(TypedDict):
@@ -193,6 +210,8 @@ class ListInvoicesParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     search: str
     sort: str
     order: Literal["asc", "desc"]
@@ -204,7 +223,9 @@ class ListInvoicesParams(TypedDict, total=False):
 # QUOTE TYPES
 # ===========================================
 
-QuoteStatus = Literal["draft", "sent", "viewed", "approved", "rejected", "expired", "converted"]
+QuoteStatus = Literal[
+    "draft", "sent", "viewed", "approved", "rejected", "expired", "converted"
+]
 
 
 class QuoteItem(TypedDict):
@@ -235,10 +256,13 @@ class Quote(TypedDict):
     total: float
     notes: Optional[str]
     terms: Optional[str]
+    sent_at: Optional[str]  # Timestamp when the quote was sent to the client
+    approved_at: Optional[str]  # Timestamp when the quote was approved/accepted
+    approved_by: Optional[str]  # User ID or name of who approved the quote
     items: List[QuoteItem]
     client: NotRequired[Client]
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class CreateQuoteParams(TypedDict):
@@ -276,6 +300,8 @@ class ListQuotesParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     search: str
     sort: str
     order: Literal["asc", "desc"]
@@ -287,8 +313,10 @@ class ListQuotesParams(TypedDict, total=False):
 # JOB TYPES
 # ===========================================
 
-JobStatus = Literal["pending", "scheduled", "in_progress", "completed", "cancelled", "on_hold"]
-JobPriority = Literal["low", "medium", "high", "urgent"]
+JobStatus = Literal[
+    "draft", "scheduled", "in_progress", "on_hold", "completed", "cancelled", "invoiced", "closed"
+]
+JobPriority = Literal["low", "medium", "normal", "high", "urgent"]
 
 
 class Job(TypedDict):
@@ -297,6 +325,7 @@ class Job(TypedDict):
     id: str
     business_id: str
     client_id: Optional[str]
+    job_number: Optional[str]  # Unique job number for display/reference
     title: str
     description: Optional[str]
     status: JobStatus
@@ -310,7 +339,7 @@ class Job(TypedDict):
     notes: Optional[str]
     client: NotRequired[Client]
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class CreateJobParams(TypedDict):
@@ -350,6 +379,8 @@ class ListJobsParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     search: str
     sort: str
     order: Literal["asc", "desc"]
@@ -365,7 +396,7 @@ class ListJobsParams(TypedDict, total=False):
 ServiceRequestStatus = Literal[
     "new", "reviewing", "scheduled", "completed", "cancelled", "declined"
 ]
-ServiceRequestPriority = Literal["low", "medium", "high", "urgent"]
+ServiceRequestPriority = Literal["low", "normal", "high", "urgent"]
 
 
 class ServiceRequest(TypedDict):
@@ -374,6 +405,7 @@ class ServiceRequest(TypedDict):
     id: str
     business_id: str
     client_id: Optional[str]
+    request_number: str  # Unique request number for display/reference (auto-generated)
     title: str
     description: Optional[str]
     status: ServiceRequestStatus
@@ -388,7 +420,7 @@ class ServiceRequest(TypedDict):
     notes: Optional[str]
     client: NotRequired[Client]
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class CreateServiceRequestParams(TypedDict):
@@ -432,6 +464,8 @@ class ListServiceRequestsParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     search: str
     sort: str
     order: Literal["asc", "desc"]
@@ -445,22 +479,41 @@ class ListServiceRequestsParams(TypedDict, total=False):
 # ===========================================
 
 WebhookEvent = Literal[
+    # Client events
     "client.created",
     "client.updated",
     "client.deleted",
+    # Invoice events
     "invoice.created",
+    "invoice.updated",
     "invoice.sent",
+    "invoice.viewed",
     "invoice.paid",
     "invoice.overdue",
+    "invoice.voided",
+    # Quote events
     "quote.created",
+    "quote.updated",
     "quote.sent",
+    "quote.viewed",
     "quote.accepted",
     "quote.rejected",
+    "quote.expired",
+    # Job events
     "job.created",
+    "job.updated",
     "job.status_changed",
     "job.completed",
+    "job.cancelled",
+    # Service request events
     "service_request.created",
+    "service_request.updated",
     "service_request.assigned",
+    "service_request.completed",
+]
+
+WebhookEventCategory = Literal[
+    "client", "invoice", "quote", "job", "service_request"
 ]
 
 
@@ -474,8 +527,14 @@ class Webhook(TypedDict):
     events: List[WebhookEvent]
     secret: str
     is_active: bool
+    metadata: Optional[Dict[str, Any]]  # Custom metadata attached to the webhook
+    failure_count: int  # Number of consecutive delivery failures
+    last_triggered_at: Optional[str]  # Timestamp of the last webhook trigger
+    last_success_at: Optional[str]  # Timestamp of the last successful delivery
+    last_failure_at: Optional[str]  # Timestamp of the last failed delivery
+    created_by: Optional[str]  # User ID who created the webhook
     created_at: str
-    updated_at: str
+    updated_at: Optional[str]
 
 
 class WebhookDelivery(TypedDict):
@@ -483,14 +542,20 @@ class WebhookDelivery(TypedDict):
 
     id: str
     webhook_id: str
+    event_id: str  # Unique event ID for idempotency
     event_type: WebhookEvent
-    payload: dict[str, Any]
+    payload: Dict[str, Any]
+    request_headers: Optional[Dict[str, str]]  # Headers sent with the webhook request
     response_status: Optional[int]
+    response_headers: Optional[Dict[str, str]]  # Headers received in the response
     response_body: Optional[str]
+    response_time_ms: Optional[int]  # Response time in milliseconds
     attempt_count: int
+    max_attempts: int  # Maximum number of delivery attempts
     next_retry_at: Optional[str]
     delivered_at: Optional[str]
     failed_at: Optional[str]
+    error_message: Optional[str]  # Error message if delivery failed
     created_at: str
 
 
@@ -500,6 +565,7 @@ class CreateWebhookParams(TypedDict):
     name: str
     url: str
     events: List[WebhookEvent]
+    metadata: NotRequired[Optional[Dict[str, Any]]]
 
 
 class UpdateWebhookParams(TypedDict, total=False):
@@ -509,6 +575,7 @@ class UpdateWebhookParams(TypedDict, total=False):
     url: str
     events: List[WebhookEvent]
     is_active: bool
+    metadata: Optional[Dict[str, Any]]
 
 
 class ListWebhookDeliveriesParams(TypedDict, total=False):
@@ -516,4 +583,21 @@ class ListWebhookDeliveriesParams(TypedDict, total=False):
 
     page: int
     per_page: int
+    limit: int
+    offset: int
     event_type: WebhookEvent
+    status: Literal["pending", "delivered", "failed"]
+
+
+class WebhookSecretResponse(TypedDict):
+    """Response from regenerating a webhook secret."""
+
+    secret: str
+
+
+class WebhookEventTypeInfo(TypedDict):
+    """Webhook event type information."""
+
+    event: WebhookEvent
+    description: str
+    category: WebhookEventCategory
