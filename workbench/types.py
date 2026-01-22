@@ -402,9 +402,9 @@ class ListJobsParams(TypedDict, total=False):
 # ===========================================
 
 ServiceRequestStatus = Literal[
-    "new", "contacted", "scheduled", "in_progress", "completed", "cancelled", "rejected"
+    "new", "in_progress", "assessment_complete", "completed", "cancelled"
 ]
-ServiceRequestPriority = Literal["low", "normal", "high", "urgent"]
+ServiceRequestPriority = Literal["low", "medium", "high", "urgent"]
 
 
 class ServiceRequest(TypedDict):
