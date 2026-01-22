@@ -1,5 +1,5 @@
 """
-Service Requests resource for the Workbench SDK.
+Requests resource for the Workbench SDK.
 
 Provides methods for managing service requests in Workbench CRM.
 """
@@ -18,15 +18,15 @@ if TYPE_CHECKING:
     from workbench.client import WorkbenchClient
 
 
-class ServiceRequestsResource:
+class RequestsResource:
     """
-    Service Requests resource.
+    Requests resource for managing service requests.
 
     Example:
         >>> client = WorkbenchClient(api_key="wbk_live_xxx")
         >>>
         >>> # Create a service request
-        >>> request = client.service_requests.create(
+        >>> request = client.requests.create(
         ...     title="AC Not Cooling",
         ...     contact_name="John Doe",
         ...     contact_email="john@example.com",
@@ -35,7 +35,7 @@ class ServiceRequestsResource:
         ... )
         >>>
         >>> # Update request status
-        >>> client.service_requests.update(request["data"]["id"], status="scheduled")
+        >>> client.requests.update(request["data"]["id"], status="scheduled")
     """
 
     def __init__(self, client: "WorkbenchClient"):
@@ -53,7 +53,7 @@ class ServiceRequestsResource:
         client_id: Optional[str] = None,
     ) -> ListResponse[ServiceRequest]:
         """
-        List all service requests.
+        List all requests.
 
         Args:
             page: Page number (1-indexed, default: 1)
@@ -66,7 +66,7 @@ class ServiceRequestsResource:
             client_id: Filter by client ID
 
         Returns:
-            Paginated list of service requests
+            Paginated list of requests
         """
         params: Dict[str, Any] = {
             "page": page,
@@ -78,19 +78,19 @@ class ServiceRequestsResource:
             "priority": priority,
             "client_id": client_id,
         }
-        return self._client.get("/v1/service-requests", params=params)  # type: ignore
+        return self._client.get("/v1/requests", params=params)  # type: ignore
 
     def get(self, id: str) -> ApiResponse[ServiceRequest]:
         """
-        Get a service request by ID.
+        Get a request by ID.
 
         Args:
-            id: Service request UUID
+            id: Request UUID
 
         Returns:
-            Service request details
+            Request details
         """
-        return self._client.get(f"/v1/service-requests/{id}")  # type: ignore
+        return self._client.get(f"/v1/requests/{id}")  # type: ignore
 
     def create(
         self,
@@ -109,7 +109,7 @@ class ServiceRequestsResource:
         notes: Optional[str] = None,
     ) -> ApiResponse[ServiceRequest]:
         """
-        Create a new service request.
+        Create a new request.
 
         Args:
             title: Request title (required)
@@ -127,7 +127,7 @@ class ServiceRequestsResource:
             notes: Additional notes
 
         Returns:
-            Created service request
+            Created request
         """
         data: Dict[str, Any] = {
             "title": title,
@@ -145,27 +145,27 @@ class ServiceRequestsResource:
             "notes": notes,
         }
         data = {k: v for k, v in data.items() if v is not None or k == "title"}
-        return self._client.post("/v1/service-requests", json=data)  # type: ignore
+        return self._client.post("/v1/requests", json=data)  # type: ignore
 
     def update(self, id: str, **kwargs: Any) -> ApiResponse[ServiceRequest]:
         """
-        Update a service request.
+        Update a request.
 
         Args:
-            id: Service request UUID
+            id: Request UUID
             **kwargs: Fields to update
 
         Returns:
-            Updated service request
+            Updated request
         """
         data = {k: v for k, v in kwargs.items() if v is not None}
-        return self._client.put(f"/v1/service-requests/{id}", json=data)  # type: ignore
+        return self._client.put(f"/v1/requests/{id}", json=data)  # type: ignore
 
     def delete(self, id: str) -> None:
         """
-        Delete a service request.
+        Delete a request.
 
         Args:
-            id: Service request UUID
+            id: Request UUID
         """
-        self._client.delete(f"/v1/service-requests/{id}")
+        self._client.delete(f"/v1/requests/{id}")

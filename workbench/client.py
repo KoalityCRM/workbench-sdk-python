@@ -14,7 +14,7 @@ from workbench.resources.clients import ClientsResource
 from workbench.resources.invoices import InvoicesResource
 from workbench.resources.quotes import QuotesResource
 from workbench.resources.jobs import JobsResource
-from workbench.resources.service_requests import ServiceRequestsResource
+from workbench.resources.requests import RequestsResource
 from workbench.resources.webhooks import WebhooksResource
 from workbench.resources.notifications import NotificationsResource
 
@@ -121,7 +121,7 @@ class WorkbenchClient:
         self.invoices = InvoicesResource(self)
         self.quotes = QuotesResource(self)
         self.jobs = JobsResource(self)
-        self.service_requests = ServiceRequestsResource(self)
+        self.requests = RequestsResource(self)
         self.webhooks = WebhooksResource(self)
         self.notifications = NotificationsResource(self)
 
