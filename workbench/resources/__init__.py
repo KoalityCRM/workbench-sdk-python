@@ -6,6 +6,7 @@ from workbench.resources.quotes import QuotesResource
 from workbench.resources.jobs import JobsResource
 from workbench.resources.service_requests import ServiceRequestsResource
 from workbench.resources.webhooks import WebhooksResource
+from workbench.resources.notifications import NotificationsResource
 
 __all__ = [
     "ClientsResource",
@@ -14,4 +15,5 @@ __all__ = [
     "JobsResource",
     "ServiceRequestsResource",
     "WebhooksResource",
+    "NotificationsResource",
 ]

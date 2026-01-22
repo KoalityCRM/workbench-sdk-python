@@ -63,6 +63,14 @@ from workbench.types import (
     WebhookEvent,
     CreateWebhookParams,
     UpdateWebhookParams,
+    # Notification types
+    NotificationType,
+    NotificationEvent,
+    BusinessUserRole,
+    NotificationResult,
+    SendToClientParams,
+    SendToTeamParams,
+    SendCustomNotificationParams,
     # Response types
     ApiResponse,
     ListResponse,
@@ -113,6 +121,15 @@ __all__ = [
     "WebhookEvent",
     "CreateWebhookParams",
     "UpdateWebhookParams",
+    # Notification types
+    "NotificationType",
+    "NotificationEvent",
+    "BusinessUserRole",
+    "NotificationResult",
+    "SendToClientParams",
+    "SendToTeamParams",
+    "SendCustomNotificationParams",
+    # Response types
     "ApiResponse",
     "ListResponse",
     "Pagination",

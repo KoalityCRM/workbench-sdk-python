@@ -60,7 +60,11 @@ class ListResponse(TypedDict, Generic[T]):
 # CLIENT TYPES
 # ===========================================
 
-ClientStatus = Literal["active", "inactive", "lead", "prospect"]
+# Client lifecycle status
+ClientStatus = Literal["active", "inactive", "archived"]
+
+# Lead pipeline stage
+LeadStatus = Literal["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost"]
 
 
 class Client(TypedDict):
@@ -74,6 +78,7 @@ class Client(TypedDict):
     email: Optional[str]
     phone: Optional[str]
     status: ClientStatus
+    lead_status: Optional[LeadStatus]  # Lead pipeline stage
     source: Optional[str]
     notes: Optional[str]
     internal_notes: Optional[str]  # Internal notes visible only to business users
@@ -92,7 +97,8 @@ class CreateClientParams(TypedDict):
     company: NotRequired[Optional[str]]
     email: NotRequired[Optional[str]]
     phone: NotRequired[Optional[str]]
-    status: NotRequired[ClientStatus]
+    status: NotRequired[ClientStatus]  # Defaults to 'active'
+    lead_status: NotRequired[Optional[LeadStatus]]  # Defaults to 'new'
     source: NotRequired[Optional[str]]
     notes: NotRequired[Optional[str]]
     internal_notes: NotRequired[Optional[str]]
@@ -108,6 +114,7 @@ class UpdateClientParams(TypedDict, total=False):
     email: Optional[str]
     phone: Optional[str]
     status: ClientStatus
+    lead_status: Optional[LeadStatus]
     source: Optional[str]
     notes: Optional[str]
     internal_notes: Optional[str]
@@ -127,6 +134,7 @@ class ListClientsParams(TypedDict, total=False):
     sort: str
     order: Literal["asc", "desc"]
     status: ClientStatus
+    lead_status: LeadStatus
 
 
 # ===========================================
@@ -394,7 +402,7 @@ class ListJobsParams(TypedDict, total=False):
 # ===========================================
 
 ServiceRequestStatus = Literal[
-    "new", "reviewing", "scheduled", "completed", "cancelled", "declined"
+    "new", "contacted", "scheduled", "in_progress", "completed", "cancelled", "rejected"
 ]
 ServiceRequestPriority = Literal["low", "normal", "high", "urgent"]
 
@@ -601,3 +609,70 @@ class WebhookEventTypeInfo(TypedDict):
     event: WebhookEvent
     description: str
     category: WebhookEventCategory
+
+
+# ===========================================
+# NOTIFICATION TYPES
+# ===========================================
+
+NotificationType = Literal["CLIENT", "BUSINESS"]
+"""Type of notification recipient: CLIENT (to a client) or BUSINESS (to team members)."""
+
+NotificationEvent = Literal[
+    "sdk_client_created",
+    "sdk_request_created",
+    "sdk_quote_created",
+    "sdk_invoice_created",
+    "sdk_job_created",
+    "sdk_custom",
+]
+"""Notification events triggered by SDK operations."""
+
+BusinessUserRole = Literal["owner", "admin", "manager", "member"]
+"""Business team member role for targeting notifications."""
+
+
+class NotificationResult(TypedDict):
+    """Result of sending a notification."""
+
+    notification_id: str
+    recipients_count: int
+    sent_count: int
+    failed_count: int
+
+
+class SendToClientParams(TypedDict):
+    """Parameters for sending a notification to a client."""
+
+    client_id: str
+    event: NotificationEvent
+    template_data: NotRequired[Optional[Dict[str, Any]]]
+    subject_override: NotRequired[Optional[str]]
+    html_override: NotRequired[Optional[str]]
+    entity_type: NotRequired[Optional[str]]
+    entity_id: NotRequired[Optional[str]]
+
+
+class SendToTeamParams(TypedDict):
+    """Parameters for sending a notification to business team members."""
+
+    event: NotificationEvent
+    roles: NotRequired[Optional[List[BusinessUserRole]]]
+    template_data: NotRequired[Optional[Dict[str, Any]]]
+    subject_override: NotRequired[Optional[str]]
+    html_override: NotRequired[Optional[str]]
+    entity_type: NotRequired[Optional[str]]
+    entity_id: NotRequired[Optional[str]]
+
+
+class SendCustomNotificationParams(TypedDict):
+    """Parameters for sending a custom notification."""
+
+    type: NotificationType
+    subject: str
+    html: str
+    client_id: NotRequired[Optional[str]]
+    roles: NotRequired[Optional[List[BusinessUserRole]]]
+    template_data: NotRequired[Optional[Dict[str, Any]]]
+    entity_type: NotRequired[Optional[str]]
+    entity_id: NotRequired[Optional[str]]
