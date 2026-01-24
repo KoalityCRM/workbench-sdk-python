@@ -676,3 +676,131 @@ class SendCustomNotificationParams(TypedDict):
     template_data: NotRequired[Optional[Dict[str, Any]]]
     entity_type: NotRequired[Optional[str]]
     entity_id: NotRequired[Optional[str]]
+
+
+# ===========================================
+# INTEGRATION MARKETPLACE TYPES
+# ===========================================
+
+IntegrationStatus = Literal[
+    "draft", "pending_review", "published", "rejected", "suspended"
+]
+"""Integration status values."""
+
+IntegrationCategory = Literal[
+    "accounting",
+    "analytics",
+    "automation",
+    "communication",
+    "crm",
+    "ecommerce",
+    "marketing",
+    "payments",
+    "productivity",
+    "scheduling",
+    "other",
+]
+"""Integration category values for filtering/discovery."""
+
+
+class IntegrationScope(TypedDict):
+    """OAuth scope information for an integration."""
+
+    scope: str  # Scope identifier (e.g., 'clients:read')
+    description: str  # Human-readable description of what the scope allows
+    required: bool  # Whether this scope is required for the integration
+
+
+class IntegrationDeveloper(TypedDict):
+    """Developer/company information for an integration."""
+
+    id: str
+    name: str
+    website: Optional[str]
+    verified: bool
+
+
+class Integration(TypedDict):
+    """Published integration in the marketplace."""
+
+    id: str
+    slug: str  # URL-friendly identifier
+    name: str
+    short_description: str  # Max 200 chars
+    description: str  # Full description with markdown support
+    category: IntegrationCategory
+    icon_url: Optional[str]
+    website_url: Optional[str]
+    support_email: Optional[str]
+    privacy_policy_url: Optional[str]
+    terms_url: Optional[str]
+    scopes: List[IntegrationScope]
+    webhook_events: List[WebhookEvent]
+    install_count: int
+    average_rating: Optional[float]  # 1-5
+    review_count: int
+    developer: IntegrationDeveloper
+    published_at: str
+    created_at: str
+    updated_at: Optional[str]
+
+
+class IntegrationReview(TypedDict):
+    """Integration review from a user."""
+
+    id: str
+    integration_id: str
+    rating: int  # 1-5
+    title: Optional[str]
+    content: Optional[str]
+    reviewer_name: str
+    created_at: str
+
+
+class ListIntegrationsParams(TypedDict, total=False):
+    """Parameters for listing integrations."""
+
+    page: int
+    per_page: int
+    search: str
+    category: IntegrationCategory
+    scope: str  # Filter by scope
+    sort_by: Literal["popular", "recent", "rating", "name"]
+
+
+class ListIntegrationReviewsParams(TypedDict, total=False):
+    """Parameters for listing integration reviews."""
+
+    page: int
+    per_page: int
+    min_rating: int
+
+
+class InstalledIntegration(TypedDict):
+    """Installed integration on a business account."""
+
+    id: str
+    integration_id: str
+    integration: Integration
+    access_token_prefix: str  # Masked for security
+    granted_scopes: List[str]
+    installed_at: str
+    installed_by: Optional[str]
+    is_active: bool
+
+
+class InstallIntegrationParams(TypedDict):
+    """Parameters for installing an integration."""
+
+    integration_id: str
+    scopes: List[str]  # Must be subset of integration's requested scopes
+    authorization_code: str  # From OAuth consent flow
+    code_verifier: str  # PKCE code verifier
+
+
+class SubmitReviewParams(TypedDict):
+    """Parameters for submitting an integration review."""
+
+    rating: int  # 1-5
+    title: NotRequired[Optional[str]]
+    content: NotRequired[Optional[str]]

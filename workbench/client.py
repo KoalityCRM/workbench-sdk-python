@@ -17,6 +17,7 @@ from workbench.resources.jobs import JobsResource
 from workbench.resources.requests import RequestsResource
 from workbench.resources.webhooks import WebhooksResource
 from workbench.resources.notifications import NotificationsResource
+from workbench.resources.integrations import IntegrationsResource
 
 T = TypeVar("T")
 
@@ -124,6 +125,7 @@ class WorkbenchClient:
         self.requests = RequestsResource(self)
         self.webhooks = WebhooksResource(self)
         self.notifications = NotificationsResource(self)
+        self.integrations = IntegrationsResource(self)
 
     def close(self) -> None:
         """Close the HTTP client."""
