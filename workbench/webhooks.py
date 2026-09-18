@@ -201,6 +201,9 @@ def construct_webhook_event(
         payload = payload.decode("utf-8")
 
     try:
-        return json.loads(payload)
+        event = json.loads(payload)
+        if not isinstance(event, dict):
+            raise WebhookVerificationError("Invalid webhook payload: expected a JSON object")
+        return event
     except json.JSONDecodeError:
         raise WebhookVerificationError("Invalid webhook payload: not valid JSON")

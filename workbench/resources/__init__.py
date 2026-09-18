@@ -4,7 +4,7 @@ from workbench.resources.clients import ClientsResource
 from workbench.resources.invoices import InvoicesResource
 from workbench.resources.quotes import QuotesResource
 from workbench.resources.jobs import JobsResource
-from workbench.resources.service_requests import ServiceRequestsResource
+from workbench.resources.requests import RequestsResource as ServiceRequestsResource
 from workbench.resources.webhooks import WebhooksResource
 from workbench.resources.notifications import NotificationsResource
 from workbench.resources.integrations import IntegrationsResource

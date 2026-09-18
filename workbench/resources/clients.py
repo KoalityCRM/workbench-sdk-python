@@ -4,11 +4,12 @@ Clients resource for the Workbench SDK.
 Provides methods for managing clients in Workbench CRM.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from workbench.types import (
     Client,
     ClientStatus,
+    LeadStatus,
     CreateClientParams,
     UpdateClientParams,
     ApiResponse,
@@ -50,6 +51,8 @@ class ClientsResource:
         sort: Optional[str] = None,
         order: Optional[str] = None,
         status: Optional[ClientStatus] = None,
+        *,
+        lead_status: Optional[LeadStatus] = None,
     ) -> ListResponse[Client]:
         """
         List all clients.
@@ -72,6 +75,7 @@ class ClientsResource:
             "sort": sort,
             "order": order,
             "status": status,
+            "lead_status": lead_status,
         }
         return self._client.get("/v1/clients", params=params)  # type: ignore
 
@@ -97,7 +101,10 @@ class ClientsResource:
         status: Optional[ClientStatus] = None,
         source: Optional[str] = None,
         notes: Optional[str] = None,
-        tags: Optional[list[str]] = None,
+        tags: Optional[List[str]] = None,
+        *,
+        lead_status: Optional[LeadStatus] = None,
+        internal_notes: Optional[str] = None,
     ) -> ApiResponse[Client]:
         """
         Create a new client.
@@ -126,6 +133,8 @@ class ClientsResource:
             "source": source,
             "notes": notes,
             "tags": tags,
+            "lead_status": lead_status,
+            "internal_notes": internal_notes,
         }
         # Remove None values
         data = {k: v for k, v in data.items() if v is not None}
@@ -142,8 +151,8 @@ class ClientsResource:
         Returns:
             Updated client
         """
-        # Remove None values
-        data = {k: v for k, v in kwargs.items() if v is not None}
+        # Omission preserves a field; explicit None clears nullable API fields.
+        data = dict(kwargs)
         return self._client.put(f"/v1/clients/{id}", json=data)  # type: ignore
 
     def delete(self, id: str) -> None:

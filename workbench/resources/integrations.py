@@ -7,7 +7,7 @@ The IntegrationsResource provides methods for:
 - Managing installed integrations on your business account
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional, cast
 
 from ..types import (
     ApiResponse,
@@ -107,7 +107,7 @@ class IntegrationsResource:
         if sort_by is not None:
             params["sort_by"] = sort_by  # type: ignore
 
-        return self._client._get("/v1/integrations", params=params)
+        return cast(ListResponse[Integration], self._client.get("/v1/integrations", params=dict(params)))
 
     def get(self, id_or_slug: str) -> ApiResponse[Integration]:
         """
@@ -126,7 +126,7 @@ class IntegrationsResource:
             >>> print(f"{integration['data']['name']} by {integration['data']['developer']['name']}")
             >>> print(f"Installs: {integration['data']['install_count']}")
         """
-        return self._client._get(f"/v1/integrations/{id_or_slug}")
+        return cast(ApiResponse[Integration], self._client.get(f"/v1/integrations/{id_or_slug}"))
 
     def get_reviews(
         self,
@@ -166,9 +166,9 @@ class IntegrationsResource:
         if min_rating is not None:
             params["min_rating"] = min_rating
 
-        return self._client._get(
-            f"/v1/integrations/{integration_id}/reviews", params=params
-        )
+        return cast(ListResponse[IntegrationReview], self._client.get(
+            f"/v1/integrations/{integration_id}/reviews", params=dict(params)
+        ))
 
     # ===========================================
     # INSTALLED INTEGRATIONS (Authenticated)
@@ -190,7 +190,7 @@ class IntegrationsResource:
             ...     print(f"{install['integration']['name']} - Active: {install['is_active']}")
             ...     print(f"Scopes: {', '.join(install['granted_scopes'])}")
         """
-        return self._client._get("/v1/integrations/installed")
+        return cast(ListResponse[InstalledIntegration], self._client.get("/v1/integrations/installed"))
 
     def get_installed(self, installation_id: str) -> ApiResponse[InstalledIntegration]:
         """
@@ -206,12 +206,12 @@ class IntegrationsResource:
             >>> install = workbench.integrations.get_installed("install-uuid")
             >>> print(f"Installed on: {install['data']['installed_at']}")
         """
-        return self._client._get(f"/v1/integrations/installed/{installation_id}")
+        return cast(ApiResponse[InstalledIntegration], self._client.get(f"/v1/integrations/installed/{installation_id}"))
 
     def install(
         self,
         integration_id: str,
-        scopes: list[str],
+        scopes: List[str],
         authorization_code: str,
         code_verifier: str,
     ) -> ApiResponse[InstalledIntegration]:
@@ -246,7 +246,7 @@ class IntegrationsResource:
             "authorization_code": authorization_code,
             "code_verifier": code_verifier,
         }
-        return self._client._post("/v1/integrations/install", data=data)
+        return cast(ApiResponse[InstalledIntegration], self._client.post("/v1/integrations/install", json=dict(data)))
 
     def uninstall(self, installation_id: str) -> None:
         """
@@ -262,7 +262,7 @@ class IntegrationsResource:
             >>> workbench.integrations.uninstall("install-uuid")
             >>> print("Integration uninstalled")
         """
-        self._client._delete(f"/v1/integrations/installed/{installation_id}")
+        self._client.delete(f"/v1/integrations/installed/{installation_id}")
 
     def disable(self, installation_id: str) -> ApiResponse[InstalledIntegration]:
         """
@@ -281,9 +281,9 @@ class IntegrationsResource:
             >>> install = workbench.integrations.disable("install-uuid")
             >>> print(f"Active: {install['data']['is_active']}")  # False
         """
-        return self._client._post(
+        return cast(ApiResponse[InstalledIntegration], self._client.post(
             f"/v1/integrations/installed/{installation_id}/disable"
-        )
+        ))
 
     def enable(self, installation_id: str) -> ApiResponse[InstalledIntegration]:
         """
@@ -299,9 +299,9 @@ class IntegrationsResource:
             >>> install = workbench.integrations.enable("install-uuid")
             >>> print(f"Active: {install['data']['is_active']}")  # True
         """
-        return self._client._post(
+        return cast(ApiResponse[InstalledIntegration], self._client.post(
             f"/v1/integrations/installed/{installation_id}/enable"
-        )
+        ))
 
     # ===========================================
     # REVIEWS (Authenticated)
@@ -342,6 +342,6 @@ class IntegrationsResource:
         if content is not None:
             data["content"] = content
 
-        return self._client._post(
-            f"/v1/integrations/{integration_id}/reviews", data=data
-        )
+        return cast(ApiResponse[IntegrationReview], self._client.post(
+            f"/v1/integrations/{integration_id}/reviews", json=dict(data)
+        ))

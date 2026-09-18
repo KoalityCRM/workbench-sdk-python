@@ -4,7 +4,7 @@ Quotes resource for the Workbench SDK.
 Provides methods for managing quotes/estimates in Workbench CRM.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from workbench.types import (
     Quote,
@@ -101,6 +101,8 @@ class QuotesResource:
         discount_amount: Optional[float] = None,
         notes: Optional[str] = None,
         terms: Optional[str] = None,
+        *,
+        discount_type: Optional[Literal["percentage", "fixed"]] = None,
     ) -> ApiResponse[Quote]:
         """
         Create a new quote.
@@ -128,6 +130,7 @@ class QuotesResource:
             "issue_date": issue_date,
             "valid_until": valid_until,
             "tax_rate": tax_rate,
+            "discount_type": discount_type,
             "discount_amount": discount_amount,
             "notes": notes,
             "terms": terms,
@@ -148,7 +151,8 @@ class QuotesResource:
         Returns:
             Updated quote
         """
-        data = {k: v for k, v in kwargs.items() if v is not None}
+        # Omission preserves a field; explicit None clears nullable API fields.
+        data = dict(kwargs)
         return self._client.put(f"/v1/quotes/{id}", json=data)  # type: ignore
 
     def delete(self, id: str) -> None:
@@ -160,9 +164,10 @@ class QuotesResource:
         """
         self._client.delete(f"/v1/quotes/{id}")
 
-    def send(self, id: str) -> ApiResponse[Dict[str, str]]:
+    def send(self, id: str) -> ApiResponse[Quote]:
         """
-        Send a quote via email.
+        Mark a draft quote as sent and emit its API event.
+        This endpoint does not deliver email; use the application's sending workflow.
 
         Args:
             id: Quote UUID

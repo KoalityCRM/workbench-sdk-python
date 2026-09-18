@@ -139,7 +139,7 @@ class WorkbenchClient:
 
     def _get_retry_delay(self, attempt: int) -> float:
         """Calculate exponential backoff delay."""
-        return min(1.0 * (2**attempt), 10.0)
+        return float(min(2**attempt, 10))
 
     def _is_retryable(self, status: int) -> bool:
         """Determine if an error is retryable."""
@@ -210,7 +210,10 @@ class WorkbenchClient:
                 if response.status_code == 204:
                     return {}
 
-                return response.json()
+                result = response.json()
+                if not isinstance(result, dict):
+                    raise WorkbenchError("Invalid API response: expected a JSON object", code="INVALID_RESPONSE")
+                return result
 
             except httpx.TimeoutException:
                 last_error = WorkbenchError("Request timeout", code="TIMEOUT")

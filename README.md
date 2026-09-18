@@ -1,5 +1,7 @@
 # workbench-sdk
 
+Version 2 narrows invoice create/update statuses to non-payment states. See [invoice migration guidance](INVOICE_WRITES.md) before upgrading.
+
 Official Python SDK for the [Workbench CRM](https://tryworkbench.app) API.
 
 ## Installation
@@ -30,7 +32,7 @@ invoice = client.invoices.create(
     tax_rate=8.5
 )
 
-# Send the invoice
+# Mark the invoice as sent (does not deliver email)
 client.invoices.send(invoice["data"]["id"])
 ```
 
@@ -136,7 +138,7 @@ invoice = client.invoices.create(
 # Update an invoice
 client.invoices.update("invoice-uuid", status="paid")
 
-# Send an invoice
+# Mark an invoice as sent (does not deliver email)
 client.invoices.send("invoice-uuid")
 
 # Delete an invoice
@@ -158,7 +160,7 @@ quote = client.quotes.create(
     ]
 )
 
-# Send a quote
+# Mark a quote as sent (does not deliver email)
 client.quotes.send(quote["data"]["id"])
 ```
 

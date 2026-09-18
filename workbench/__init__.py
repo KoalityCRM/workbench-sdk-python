@@ -26,6 +26,7 @@ from workbench.types import (
     # Client types
     Client,
     ClientStatus,
+    LeadStatus,
     CreateClientParams,
     UpdateClientParams,
     ListClientsParams,
@@ -33,6 +34,7 @@ from workbench.types import (
     Invoice,
     InvoiceItem,
     InvoiceStatus,
+    InvoiceWriteStatus,
     CreateInvoiceParams,
     UpdateInvoiceParams,
     ListInvoicesParams,
@@ -77,7 +79,7 @@ from workbench.types import (
     Pagination,
 )
 
-__version__ = "1.2.1"
+__version__ = "2.0.0"
 __all__ = [
     # Main client
     "WorkbenchClient",
@@ -89,12 +91,14 @@ __all__ = [
     # Types
     "Client",
     "ClientStatus",
+    "LeadStatus",
     "CreateClientParams",
     "UpdateClientParams",
     "ListClientsParams",
     "Invoice",
     "InvoiceItem",
     "InvoiceStatus",
+    "InvoiceWriteStatus",
     "CreateInvoiceParams",
     "UpdateInvoiceParams",
     "ListInvoicesParams",

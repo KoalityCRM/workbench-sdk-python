@@ -4,18 +4,24 @@ Invoices resource for the Workbench SDK.
 Provides methods for managing invoices in Workbench CRM.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from workbench.types import (
     Invoice,
     InvoiceItem,
     InvoiceStatus,
+    InvoiceWriteStatus,
     ApiResponse,
     ListResponse,
 )
 
 if TYPE_CHECKING:
     from workbench.client import WorkbenchClient
+
+
+def _validate_write_status(status: Optional[InvoiceWriteStatus]) -> None:
+    if status is not None and status not in ("draft", "sent", "viewed", "overdue", "cancelled"):
+        raise ValueError("Invoice status must be draft, sent, viewed, overdue, or cancelled; payment states are read-only")
 
 
 class InvoicesResource:
@@ -94,13 +100,15 @@ class InvoicesResource:
         items: List[InvoiceItem],
         client_id: Optional[str] = None,
         job_id: Optional[str] = None,
-        status: Optional[InvoiceStatus] = None,
+        status: Optional[InvoiceWriteStatus] = None,
         issue_date: Optional[str] = None,
         due_date: Optional[str] = None,
         tax_rate: Optional[float] = None,
         discount_amount: Optional[float] = None,
         notes: Optional[str] = None,
         terms: Optional[str] = None,
+        *,
+        discount_type: Optional[Literal["percentage", "fixed"]] = None,
     ) -> ApiResponse[Invoice]:
         """
         Create a new invoice.
@@ -120,6 +128,7 @@ class InvoicesResource:
         Returns:
             Created invoice
         """
+        _validate_write_status(status)
         data: Dict[str, Any] = {
             "items": items,
             "client_id": client_id,
@@ -128,6 +137,7 @@ class InvoicesResource:
             "issue_date": issue_date,
             "due_date": due_date,
             "tax_rate": tax_rate,
+            "discount_type": discount_type,
             "discount_amount": discount_amount,
             "notes": notes,
             "terms": terms,
@@ -136,7 +146,9 @@ class InvoicesResource:
         data = {k: v for k, v in data.items() if v is not None or k == "items"}
         return self._client.post("/v1/invoices", json=data)  # type: ignore
 
-    def update(self, id: str, **kwargs: Any) -> ApiResponse[Invoice]:
+    def update(
+        self, id: str, *, status: Optional[InvoiceWriteStatus] = None, **kwargs: Any
+    ) -> ApiResponse[Invoice]:
         """
         Update an invoice.
 
@@ -149,7 +161,11 @@ class InvoicesResource:
         Returns:
             Updated invoice
         """
-        data = {k: v for k, v in kwargs.items() if v is not None}
+        _validate_write_status(status)
+        # Omission preserves a field; explicit None clears nullable API fields.
+        data = dict(kwargs)
+        if status is not None:
+            data["status"] = status
         return self._client.put(f"/v1/invoices/{id}", json=data)  # type: ignore
 
     def delete(self, id: str) -> None:
@@ -161,12 +177,12 @@ class InvoicesResource:
         """
         self._client.delete(f"/v1/invoices/{id}")
 
-    def send(self, id: str) -> ApiResponse[Dict[str, str]]:
+    def send(self, id: str) -> ApiResponse[Invoice]:
         """
-        Send an invoice via email.
+        Mark an invoice as sent.
 
-        Sends the invoice to the client's email address. The invoice
-        status will be updated to 'sent' if currently 'draft'.
+        Marks a draft invoice as sent and emits its API event.
+        This endpoint does not deliver email; use the application's sending workflow.
 
         Args:
             id: Invoice UUID

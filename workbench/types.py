@@ -141,6 +141,8 @@ class ListClientsParams(TypedDict, total=False):
 # INVOICE TYPES
 # ===========================================
 
+InvoiceWriteStatus = Literal["draft", "sent", "viewed", "overdue", "cancelled"]
+
 InvoiceStatus = Literal[
     "draft", "sent", "viewed", "partial", "paid", "overdue", "cancelled", "voided"
 ]
@@ -153,6 +155,8 @@ class InvoiceItem(TypedDict):
     description: str
     quantity: float
     unit_price: float
+    taxable: NotRequired[bool]
+    tax_rate: NotRequired[Optional[float]]
     sort_order: NotRequired[int]
 
 
@@ -177,8 +181,8 @@ class Invoice(TypedDict):
     terms: Optional[str]
     sent_at: Optional[str]  # Timestamp when the invoice was sent to the client
     paid_at: Optional[str]  # Timestamp when the invoice was fully paid
-    items: List[InvoiceItem]
-    client: NotRequired[Client]
+    items: NotRequired[List[InvoiceItem]]
+    client: NotRequired[Optional[Client]]
     created_at: str
     updated_at: Optional[str]
 
@@ -189,10 +193,11 @@ class CreateInvoiceParams(TypedDict):
     items: List[InvoiceItem]
     client_id: NotRequired[Optional[str]]
     job_id: NotRequired[Optional[str]]
-    status: NotRequired[InvoiceStatus]
+    status: NotRequired[InvoiceWriteStatus]
     issue_date: NotRequired[str]
     due_date: NotRequired[Optional[str]]
     tax_rate: NotRequired[Optional[float]]
+    discount_type: NotRequired[Optional[Literal["percentage", "fixed"]]]
     discount_amount: NotRequired[Optional[float]]
     notes: NotRequired[Optional[str]]
     terms: NotRequired[Optional[str]]
@@ -203,10 +208,11 @@ class UpdateInvoiceParams(TypedDict, total=False):
 
     client_id: Optional[str]
     job_id: Optional[str]
-    status: InvoiceStatus
+    status: InvoiceWriteStatus
     issue_date: str
     due_date: Optional[str]
     tax_rate: Optional[float]
+    discount_type: Optional[Literal["percentage", "fixed"]]
     discount_amount: Optional[float]
     notes: Optional[str]
     terms: Optional[str]
@@ -243,6 +249,8 @@ class QuoteItem(TypedDict):
     description: str
     quantity: float
     unit_price: float
+    taxable: NotRequired[bool]
+    tax_rate: NotRequired[Optional[float]]
     sort_order: NotRequired[int]
 
 
@@ -267,8 +275,8 @@ class Quote(TypedDict):
     sent_at: Optional[str]  # Timestamp when the quote was sent to the client
     approved_at: Optional[str]  # Timestamp when the quote was approved/accepted
     approved_by: Optional[str]  # User ID or name of who approved the quote
-    items: List[QuoteItem]
-    client: NotRequired[Client]
+    items: NotRequired[List[QuoteItem]]
+    client: NotRequired[Optional[Client]]
     created_at: str
     updated_at: Optional[str]
 
@@ -283,6 +291,7 @@ class CreateQuoteParams(TypedDict):
     issue_date: NotRequired[str]
     valid_until: NotRequired[Optional[str]]
     tax_rate: NotRequired[Optional[float]]
+    discount_type: NotRequired[Optional[Literal["percentage", "fixed"]]]
     discount_amount: NotRequired[Optional[float]]
     notes: NotRequired[Optional[str]]
     terms: NotRequired[Optional[str]]
@@ -297,6 +306,7 @@ class UpdateQuoteParams(TypedDict, total=False):
     issue_date: str
     valid_until: Optional[str]
     tax_rate: Optional[float]
+    discount_type: Optional[Literal["percentage", "fixed"]]
     discount_amount: Optional[float]
     notes: Optional[str]
     terms: Optional[str]
