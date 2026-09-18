@@ -6,8 +6,8 @@ full type safety when working with the Workbench API.
 """
 
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Literal, Optional, TypedDict, TypeVar
-from typing_extensions import NotRequired
+from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar
+from typing_extensions import NotRequired, TypedDict
 
 # ===========================================
 # GENERIC TYPES
