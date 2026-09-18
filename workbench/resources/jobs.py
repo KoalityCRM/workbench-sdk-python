@@ -148,7 +148,7 @@ class JobsResource:
         Returns:
             Updated job
         """
-        data = {k: v for k, v in kwargs.items() if v is not None}
+        data = dict(kwargs)  # Explicit None clears nullable fields; omitted fields remain unchanged.
         return self._client.put(f"/v1/jobs/{id}", json=data)  # type: ignore
 
     def delete(self, id: str) -> None:

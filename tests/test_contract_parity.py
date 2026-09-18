@@ -9,6 +9,7 @@ from workbench.resources.integrations import IntegrationsResource
 from workbench.resources.clients import ClientsResource
 from workbench.resources.invoices import InvoicesResource
 from workbench.resources.quotes import QuotesResource
+from workbench.resources.jobs import JobsResource
 
 
 class ContractParityTests(unittest.TestCase):
@@ -69,7 +70,7 @@ class ContractParityTests(unittest.TestCase):
         client.post.assert_called_once_with('/v1/clients', json={'first_name': 'Ada', 'lead_status': 'qualified', 'internal_notes': 'Fixture'})
 
     def test_explicit_null_updates_reach_api(self):
-        for resource, path in [(ClientsResource, 'clients'), (InvoicesResource, 'invoices'), (QuotesResource, 'quotes')]:
+        for resource, path in [(ClientsResource, 'clients'), (InvoicesResource, 'invoices'), (QuotesResource, 'quotes'), (JobsResource, 'jobs')]:
             with self.subTest(resource=path):
                 client = Mock()
                 resource(client).update('id', notes=None)

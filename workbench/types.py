@@ -352,7 +352,9 @@ class Job(TypedDict):
     scheduled_end: Optional[str]
     actual_start: Optional[str]
     actual_end: Optional[str]
-    estimated_duration: Optional[int]
+    estimated_duration: Optional[float]  # Minutes
+    estimated_hours: NotRequired[Optional[float]]
+    service_address: NotRequired[Optional[Dict[str, Any]]]
     address_id: Optional[str]
     notes: Optional[str]
     client: NotRequired[Client]
